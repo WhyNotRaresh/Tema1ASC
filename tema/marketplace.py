@@ -112,17 +112,16 @@ class Marketplace:
                     # head is equal to product we are searching for
                     cart.append(queue_head)
                     return True
-                
-                else:
-                    # not the product we are looking for
-                    while True:
-                        # tries introducing it back into the producer's queue
-                        try:
-                            self.producer_queues[producer_id].put_nowait(queue_head)
-                            break
-                        except Full:
-                            # queue is full, try again
-                            continue
+
+                # not the product we are looking for
+                while True:
+                    # tries introducing it back into the producer's queue
+                    try:
+                        self.producer_queues[producer_id].put_nowait(queue_head)
+                        break
+                    except Full:
+                        # queue is full, try again
+                        continue
 
             except Empty:
                 # queue is empty, go search product in next queue
