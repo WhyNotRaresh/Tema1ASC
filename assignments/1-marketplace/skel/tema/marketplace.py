@@ -8,7 +8,7 @@ March 2021
 
 from threading import Lock
 from queue import Queue, Full, Empty
-from typing import Dict, List
+from typing import Dict
 
 
 class Marketplace:
@@ -36,13 +36,22 @@ class Marketplace:
         self.consumers_no = 0                           # number of consumers
         self.consumer_carts: Dict[int, list] = {}       # all carts
 
-    def register_producer(self) -> int:
+        # First queue is for removed products
+        self.register_producer(ignore_limit=True)
+
+    def register_producer(self, ignore_limit: bool = False) -> int:
         """
         Returns an id for the producer that calls this.
+
+        :type ignore_limit: bool
+        :param ignore_limit: sets queue to ignore queue_size_per_producer
         """
         self.register_lock.acquire()                                        # acquiring lock
         producer_id = self.producers_no
-        self.producer_queues[producer_id] = Queue(self.queue_size)          # creating new queue for the producer
+        if ignore_limit:
+            self.producer_queues[producer_id] = Queue()                     # creates a new queue of unlimited size
+        else:
+            self.producer_queues[producer_id] = Queue(self.queue_size)      # creating new queue for the producer
         self.producers_no += 1                                              # increasing number of producers
         self.register_lock.release()                                        # releasing lock
         return producer_id
@@ -95,8 +104,7 @@ class Marketplace:
             try:
                 queue_head = self.producer_queues[producer_id].get_nowait()
                 if queue_head == product:
-                    cart.append((queue_head, producer_id))
-                    print(cart)
+                    cart.append(queue_head)
                     return True
                 else:
                     while True:
@@ -110,7 +118,7 @@ class Marketplace:
 
         return False
 
-    def remove_from_cart(self, cart_id, product):
+    def remove_from_cart(self, cart_id: int, product) -> None:
         """
         Removes a product from cart.
 
@@ -120,13 +128,18 @@ class Marketplace:
         :type product: Product
         :param product: the product to remove from cart
         """
-        pass
+        try:
+            self.consumer_carts[cart_id].remove(product)
+            self.publish(0, product)
+        except ValueError:
+            # no such item in cart
+            pass
 
-    def place_order(self, cart_id):
+    def place_order(self, cart_id: int) -> list:
         """
         Return a list with all the products in the cart.
 
         :type cart_id: Int
         :param cart_id: id cart
         """
-        pass
+        return self.consumer_carts[cart_id]

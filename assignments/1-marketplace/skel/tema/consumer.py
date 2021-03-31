@@ -15,6 +15,8 @@ class Consumer(Thread):
     Class that represents a consumer.
     """
 
+    output_str = "%s bought %s"
+
     def __init__(self, carts, marketplace, retry_wait_time, **kwargs):
         """
         Constructor.
@@ -36,26 +38,34 @@ class Consumer(Thread):
         self.carts: list = carts
         self.marketplace = marketplace
         self.retry_time = retry_wait_time
-        self.cart_id = marketplace.new_cart()
 
     def run(self):
         while len(self.carts) != 0:
-            order = self.carts.pop()
+            # processing order
+            order = self.carts.pop(0)
+            # register new cart
+            cart_id = self.marketplace.new_cart()
 
             while len(order) != 0:
-                request = order.pop()
+                # processing request from order
+                request = order.pop(0)
 
+                # handle add type request
                 if request["type"] == "add":
-                    added_products = 0
-
-                    while added_products < request["quantity"]:
-                        if self.marketplace.add_to_cart(self.cart_id,
-                                                        request["product"]):
+                    added_products = 0                                          # number of products added to cart
+                    while added_products < request["quantity"]:                 # try adding until request is met
+                        # try adding product
+                        if self.marketplace.add_to_cart(cart_id, request["product"]):
                             added_products += 1
                         else:
-                            sleep(self.retry_time)
+                            sleep(self.retry_time)                              # if fail -> retry after some time
 
+                # handle remove type request
                 if request["type"] == "remove":
-                    pass
+                    for _ in range(0, request["quantity"]):
+                        self.marketplace.remove_from_cart(cart_id, request["product"])
 
-            self.marketplace.place_order(self.cart_id)
+            # finished processing order, now printing it
+            cart_items = self.marketplace.place_order(cart_id)
+            for product in cart_items:
+                print(self.output_str % (self.name, product))
