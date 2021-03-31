@@ -4,7 +4,8 @@
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
 # Test Files
-test*/
+tests/*
+test-gen/*
 check.sh
 check_test.py
 parse.awk
