@@ -26,7 +26,7 @@ class Marketplace:
         """
 
         # Producer related variables
-        self.register_lock = Lock()                     # register lock for thread-safe registering of producers
+        self.register_lock = Lock()                     # lock for thread-safe producer registering
         self.producers_no = 0                           # number of producers
         self.queue_size = queue_size_per_producer       # max queue size for each producer
         self.producer_queues: Dict[int, Queue] = {}     # queues of all producers
@@ -46,14 +46,16 @@ class Marketplace:
         :type ignore_limit: bool
         :param ignore_limit: sets queue to ignore queue_size_per_producer
         """
-        self.register_lock.acquire()                                        # acquiring lock
-        producer_id = self.producers_no
+        self.register_lock.acquire()                            # acquiring lock
+        producer_id = self.producers_no                         # getting producer id
         if ignore_limit:
-            self.producer_queues[producer_id] = Queue()                     # creates a new queue of unlimited size
+            # creates a new queue of unlimited size
+            self.producer_queues[producer_id] = Queue()
         else:
-            self.producer_queues[producer_id] = Queue(self.queue_size)      # creating new queue for the producer
-        self.producers_no += 1                                              # increasing number of producers
-        self.register_lock.release()                                        # releasing lock
+            # creating new queue for the producer
+            self.producer_queues[producer_id] = Queue(self.queue_size)
+        self.producers_no += 1                                  # increasing number of producers
+        self.register_lock.release()                            # releasing lock
         return producer_id
 
     def publish(self, producer_id: int, product) -> bool:
@@ -110,6 +112,7 @@ class Marketplace:
                     # head is equal to product we are searching for
                     cart.append(queue_head)
                     return True
+                
                 else:
                     # not the product we are looking for
                     while True:
@@ -138,8 +141,10 @@ class Marketplace:
         :param product: the product to remove from cart
         """
         try:
-            self.consumer_carts[cart_id].remove(product)        # removing product form consumer's cart
-            self.publish(0, product)                            # adding product to the queue reserved for removed items
+            # removing product form consumer's cart
+            self.consumer_carts[cart_id].remove(product)
+            # adding product to the queue reserved for removed items
+            self.publish(0, product)
         except ValueError:
             # no such item in cart
             pass

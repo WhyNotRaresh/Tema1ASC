@@ -51,13 +51,13 @@ class Consumer(Thread):
 
                 # handle add type request
                 if request["type"] == "add":
-                    added_products = 0                                          # number of products added to cart
-                    while added_products < request["quantity"]:                 # try adding until request is met
+                    added_products = 0                           # number of products added to cart
+                    while added_products < request["quantity"]:  # try adding until request is met
                         # try adding product
                         if self.marketplace.add_to_cart(cart_id, request["product"]):
                             added_products += 1
                         else:
-                            sleep(self.retry_time)                              # if fail -> retry after some time
+                            sleep(self.retry_time)               # if fail -> retry after some time
 
                 # handle remove type request
                 if request["type"] == "remove":
@@ -67,4 +67,4 @@ class Consumer(Thread):
             # finished processing order
             cart_items = self.marketplace.place_order(cart_id)
             for product in cart_items:
-                print(self.output_str % (self.name, product))                   # printing using the format string
+                print(self.output_str % (self.name, product))    # printing using the format string

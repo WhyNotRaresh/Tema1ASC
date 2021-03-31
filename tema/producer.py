@@ -36,21 +36,22 @@ class Producer(Thread):
         self.products = products
         self.marketplace = marketplace
         self.republish_time = republish_wait_time
-        self.id = marketplace.register_producer()
+        self.producer_id = marketplace.register_producer()
 
     def run(self):
         while True:
-            for product in self.products:                           # cycle through products
-                produced = 0                                        # number of produced items
-                waited = False                                      # should you wait for production?
+            for product in self.products:                   # cycle through products
+                produced = 0                                # number of produced items
+                waited = False                              # should you wait for production?
 
-                while produced < product[1]:                        # produce specific number of products
+                while produced < product[1]:                # produce specific number of products
                     if not waited:
-                        sleep(product[2])                           # ... producing ...
-                    if self.marketplace.publish(self.id,
-                                                product[0]):        # trying to publish product for sale
+                        sleep(product[2])                   # ... producing ...
+
+                    # trying to publish product for sale
+                    if self.marketplace.publish(self.producer_id, product[0]):
                         produced += 1
                         waited = False
                     else:
-                        sleep(self.republish_time)                  # ... taking a break ...
+                        sleep(self.republish_time)          # ... taking a break ...
                         waited = True
