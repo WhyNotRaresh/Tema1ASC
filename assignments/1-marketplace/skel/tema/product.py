@@ -9,7 +9,7 @@ March 2021
 from dataclasses import dataclass
 
 
-@dataclass(init=True, repr=True, order=False, frozen=True)
+@dataclass(init=True, repr=True, order=False, frozen=True, eq=True)
 class Product:
     """
     Class that represents a product.
