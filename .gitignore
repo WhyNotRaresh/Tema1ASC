@@ -3,9 +3,16 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
-# Output files
-[0-9][0-9].out
-[0-9][0-9].out.sorted
+# Test Files
+test*/
+check.sh
+check_test.py
+parse.awk
+pylintrc
+run_tests.sh
+test.py
+
+# Error File
 result
 
 # Node artifact files
