@@ -7,7 +7,7 @@ March 2021
 """
 
 from threading import Lock
-from queue import Queue
+from queue import Queue, Full
 from typing import Dict
 
 
@@ -26,27 +26,27 @@ class Marketplace:
         """
 
         # Producer related variables
-        self.register_lock = Lock()                     # register lock for thread-safe registering of producers
-        self.producers_no = 0                           # number of producers
-        self.queue_size = queue_size_per_producer       # max queue size for each producer
-        self.producer_queues: Dict[int, Queue] = {}     # queues of all producers
+        self.register_lock = Lock()  # register lock for thread-safe registering of producers
+        self.producers_no = 0  # number of producers
+        self.queue_size = queue_size_per_producer  # max queue size for each producer
+        self.producer_queues: Dict[int, Queue] = {}  # queues of all producers
 
     def register_producer(self) -> int:
         """
         Returns an id for the producer that calls this.
         """
-        self.register_lock.acquire()                                        # acquiring lock
-        self.producers_no += 1                                              # registering new producer id
-        self.producer_queues[self.producers_no] = Queue(self.queue_size)    # creating new queue for the producer
-        return_value = self.producers_no
-        self.register_lock.release()                                        # releasing lock
-        return return_value
+        self.register_lock.acquire()  # acquiring lock
+        self.producer_queues[self.producers_no] = Queue(self.queue_size)  # creating new queue for the producer
+        producer_id = self.producers_no
+        self.producers_no += 1  # increasing number of producers
+        self.register_lock.release()  # releasing lock
+        return producer_id
 
     def publish(self, producer_id: int, product) -> bool:
         """
         Adds the product provided by the producer to the marketplace
 
-        :type producer_id: String
+        :type producer_id: int
         :param producer_id: producer id
 
         :type product: Product
@@ -54,7 +54,11 @@ class Marketplace:
 
         :returns True or False. If the caller receives False, it should wait and then try again.
         """
-        pass
+        try:
+            self.producer_queues[producer_id].put(product)
+        except Full:
+            return False
+        return True
 
     def new_cart(self):
         """

@@ -7,6 +7,7 @@ March 2021
 """
 
 from threading import Thread
+from time import sleep
 
 
 class Producer(Thread):
@@ -38,4 +39,18 @@ class Producer(Thread):
         self.id = marketplace.register_producer()
 
     def run(self):
-        pass
+        while True:
+            for product in self.products:                           # cycle through products
+                produced = 0                                        # number of produced items
+                waited = False                                      # should you wait for production?
+
+                while produced < product[1]:                        # produce specific number of products
+                    if not waited:
+                        sleep(product[2])                           # ... producing ...
+                    if self.marketplace.publish(self.id,
+                                                product[0]):        # trying to publish product for sale
+                        produced += 1
+                        waited = False
+                    else:
+                        sleep(self.republish_time)                  # ... taking a break ...
+                        waited = True
