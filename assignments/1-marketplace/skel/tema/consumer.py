@@ -15,8 +15,6 @@ class Consumer(Thread):
     Class that represents a consumer.
     """
 
-    output_str = "%s bought %s"
-
     def __init__(self, carts, marketplace, retry_wait_time, **kwargs):
         """
         Constructor.
@@ -38,6 +36,7 @@ class Consumer(Thread):
         self.carts: list = carts
         self.marketplace = marketplace
         self.retry_time = retry_wait_time
+        self.output_str = "%s bought %s"
 
     def run(self):
         while len(self.carts) != 0:
@@ -65,7 +64,7 @@ class Consumer(Thread):
                     for _ in range(0, request["quantity"]):
                         self.marketplace.remove_from_cart(cart_id, request["product"])
 
-            # finished processing order, now printing it
+            # finished processing order
             cart_items = self.marketplace.place_order(cart_id)
             for product in cart_items:
-                print(self.output_str % (self.name, product))
+                print(self.output_str % (self.name, product))                   # printing using the format string

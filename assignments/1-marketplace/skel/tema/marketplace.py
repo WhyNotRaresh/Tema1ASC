@@ -99,21 +99,30 @@ class Marketplace:
 
         :returns True or False. If the caller receives False, it should wait and then try again
         """
+        # cart in which to add new product
         cart = self.consumer_carts[cart_id]
         for producer_id in range(0, self.producers_no):
             try:
+                # getting head of this producer's queue
                 queue_head = self.producer_queues[producer_id].get_nowait()
+
                 if queue_head == product:
+                    # head is equal to product we are searching for
                     cart.append(queue_head)
                     return True
                 else:
+                    # not the product we are looking for
                     while True:
+                        # tries introducing it back into the producer's queue
                         try:
                             self.producer_queues[producer_id].put_nowait(queue_head)
                             break
                         except Full:
+                            # queue is full, try again
                             continue
+
             except Empty:
+                # queue is empty, go search product in next queue
                 continue
 
         return False
@@ -129,8 +138,8 @@ class Marketplace:
         :param product: the product to remove from cart
         """
         try:
-            self.consumer_carts[cart_id].remove(product)
-            self.publish(0, product)
+            self.consumer_carts[cart_id].remove(product)        # removing product form consumer's cart
+            self.publish(0, product)                            # adding product to the queue reserved for removed items
         except ValueError:
             # no such item in cart
             pass
