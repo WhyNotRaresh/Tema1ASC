@@ -3,6 +3,11 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
+# Output files
+[0-9][0-9].out
+[0-9][0-9].out.sorted
+result
+
 # Node artifact files
 node_modules/
 dist/
