@@ -6,28 +6,43 @@ Assignment 1
 March 2021
 """
 
+from threading import Lock
+from queue import Queue
+from typing import Dict
+
 
 class Marketplace:
     """
     Class that represents the Marketplace. It's the central part of the implementation.
     The producers and consumers use its methods concurrently.
     """
-    def __init__(self, queue_size_per_producer):
+
+    def __init__(self, queue_size_per_producer: int):
         """
         Constructor
 
         :type queue_size_per_producer: Int
         :param queue_size_per_producer: the maximum size of a queue associated with each producer
         """
-        pass
 
-    def register_producer(self):
+        # Producer related variables
+        self.register_lock = Lock()                     # register lock for thread-safe registering of producers
+        self.producers_no = 0                           # number of producers
+        self.queue_size = queue_size_per_producer       # max queue size for each producer
+        self.producer_queues: Dict[int, Queue] = {}     # queues of all producers
+
+    def register_producer(self) -> int:
         """
         Returns an id for the producer that calls this.
         """
-        pass
+        self.register_lock.acquire()                                        # acquiring lock
+        self.producers_no += 1                                              # registering new producer id
+        self.producer_queues[self.producers_no] = Queue(self.queue_size)    # creating new queue for the producer
+        return_value = self.producers_no
+        self.register_lock.release()                                        # releasing lock
+        return return_value
 
-    def publish(self, producer_id, product):
+    def publish(self, producer_id: int, product) -> bool:
         """
         Adds the product provided by the producer to the marketplace
 
